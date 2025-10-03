@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830604884407",
+    "project_id": "authen-x-3215b",
+    "storage_bucket": "authen-x-3215b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830604884407:android:f37076bdf40c5027995032",
+        "android_client_info": {
+          "package_name": "com.example.authen_x"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTMrsBhICuKIg06n6FtkU2Lpfiv67PPZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
