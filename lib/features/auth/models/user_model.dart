@@ -14,6 +14,7 @@ class UserModel {
   final DateTime updatedAt;
   final bool isEmailVerified;
   final bool isPhoneVerified;
+  final bool hasPassword;
 
   const UserModel({
     required this.uid,
@@ -29,6 +30,7 @@ class UserModel {
     required this.updatedAt,
     this.isEmailVerified = false,
     this.isPhoneVerified = true, // Phone is verified via OTP
+    this.hasPassword = false, // Password setup status
   });
 
   // Convert to Map for Firestore
@@ -47,6 +49,7 @@ class UserModel {
       'updatedAt': Timestamp.fromDate(updatedAt),
       'isEmailVerified': isEmailVerified,
       'isPhoneVerified': isPhoneVerified,
+      'hasPassword': hasPassword,
     };
   }
 
@@ -68,6 +71,7 @@ class UserModel {
       updatedAt: (map['updatedAt'] as Timestamp).toDate(),
       isEmailVerified: map['isEmailVerified'] ?? false,
       isPhoneVerified: map['isPhoneVerified'] ?? true,
+      hasPassword: map['hasPassword'] ?? false,
     );
   }
 
@@ -104,6 +108,7 @@ class UserModel {
     DateTime? updatedAt,
     bool? isEmailVerified,
     bool? isPhoneVerified,
+    bool? hasPassword,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -119,6 +124,7 @@ class UserModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      hasPassword: hasPassword ?? this.hasPassword,
     );
   }
 

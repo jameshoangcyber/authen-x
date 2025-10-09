@@ -1,13 +1,29 @@
-import 'package:authen_x/features/auth/logic/registration_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../data/auth_repository.dart';
 import '../data/user_repository.dart';
 import '../models/user_model.dart';
 
-// Repository provider
+// Auth repository provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
+});
+
+// User repository provider
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  return UserRepository();
+});
+
+// Current user profile provider
+final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
+  final currentUser = ref.watch(currentUserProvider);
+  final userRepository = ref.watch(userRepositoryProvider);
+
+  if (currentUser == null) {
+    return Stream.value(null);
+  }
+
+  return userRepository.getCurrentUserProfileStream();
 });
 
 // Auth state provider
@@ -201,6 +217,65 @@ final otpVerificationControllerProvider =
       return OtpVerificationController(authRepository);
     });
 
+// Password sign-in state
+class PasswordSignInState {
+  final bool isLoading;
+  final String? error;
+  final bool isSuccess;
+
+  const PasswordSignInState({
+    this.isLoading = false,
+    this.error,
+    this.isSuccess = false,
+  });
+
+  PasswordSignInState copyWith({
+    bool? isLoading,
+    String? error,
+    bool? isSuccess,
+  }) {
+    return PasswordSignInState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+}
+
+// Password sign-in controller
+class PasswordSignInController extends StateNotifier<PasswordSignInState> {
+  final Ref _ref;
+
+  PasswordSignInController(this._ref) : super(const PasswordSignInState());
+
+  Future<void> signInWithPassword(String phoneNumber, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final authRepository = _ref.read(authRepositoryProvider);
+      await authRepository.signInWithPassword(phoneNumber, password);
+
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+        isSuccess: false,
+      );
+    }
+  }
+
+  void resetState() {
+    state = const PasswordSignInState();
+  }
+}
+
+// Password sign-in controller provider
+final passwordSignInControllerProvider =
+    StateNotifierProvider<PasswordSignInController, PasswordSignInState>((ref) {
+      return PasswordSignInController(ref);
+    });
+
 // Sign out controller
 final signOutControllerProvider = Provider<Future<void> Function()>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
@@ -214,168 +289,3 @@ final signOutControllerProvider = Provider<Future<void> Function()>((ref) {
     }
   };
 });
-
-// Email Sign In State
-class EmailSignInState {
-  final bool isLoading;
-  final String? error;
-  final bool isSignedIn;
-  final User? user;
-
-  const EmailSignInState({
-    this.isLoading = false,
-    this.error,
-    this.isSignedIn = false,
-    this.user,
-  });
-
-  EmailSignInState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isSignedIn,
-    User? user,
-  }) {
-    return EmailSignInState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      isSignedIn: isSignedIn ?? this.isSignedIn,
-      user: user ?? this.user,
-    );
-  }
-}
-
-// Email Sign In Controller
-class EmailSignInController extends StateNotifier<EmailSignInState> {
-  final AuthRepository _authRepository;
-
-  EmailSignInController(this._authRepository) : super(const EmailSignInState());
-
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final userCredential = await _authRepository.signInWithEmailAndPassword(
-        email,
-        password,
-      );
-      state = state.copyWith(
-        isLoading: false,
-        isSignedIn: true,
-        user: userCredential.user,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
-}
-
-final emailSignInControllerProvider =
-    StateNotifierProvider<EmailSignInController, EmailSignInState>((ref) {
-      final authRepository = ref.watch(authRepositoryProvider);
-      return EmailSignInController(authRepository);
-    });
-
-// Email Registration State
-class EmailRegistrationState {
-  final bool isLoading;
-  final String? error;
-  final bool isRegistered;
-  final User? user;
-
-  const EmailRegistrationState({
-    this.isLoading = false,
-    this.error,
-    this.isRegistered = false,
-    this.user,
-  });
-
-  EmailRegistrationState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isRegistered,
-    User? user,
-  }) {
-    return EmailRegistrationState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      isRegistered: isRegistered ?? this.isRegistered,
-      user: user ?? this.user,
-    );
-  }
-}
-
-// Email Registration Controller
-class EmailRegistrationController
-    extends StateNotifier<EmailRegistrationState> {
-  final AuthRepository _authRepository;
-  final UserRepository _userRepository;
-
-  EmailRegistrationController(this._authRepository, this._userRepository)
-    : super(const EmailRegistrationState());
-
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-    required String firstName,
-    required String lastName,
-  }) async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      // Create user with email and password
-      final userCredential = await _authRepository
-          .createUserWithEmailAndPassword(
-            email,
-            password,
-            '${firstName} ${lastName}',
-          );
-
-      // Create user profile in Firestore
-      final userModel =
-          UserModel.fromFirebaseUser(
-            userCredential.user!.uid,
-            '', // No phone number for email registration
-            email: email,
-            displayName: '${firstName} ${lastName}',
-          ).copyWith(
-            firstName: firstName,
-            lastName: lastName,
-            isEmailVerified: userCredential.user!.emailVerified,
-          );
-
-      await _userRepository.createUserProfile(userModel);
-
-      // Sign out user after successful registration
-      await _authRepository.signOut();
-
-      state = state.copyWith(
-        isLoading: false,
-        isRegistered: true,
-        user: null, // Clear user after sign out
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
-
-  void resetState() {
-    state = const EmailRegistrationState();
-  }
-}
-
-final emailRegistrationControllerProvider =
-    StateNotifierProvider<EmailRegistrationController, EmailRegistrationState>((
-      ref,
-    ) {
-      final authRepository = ref.watch(authRepositoryProvider);
-      final userRepository = ref.watch(userRepositoryProvider);
-      return EmailRegistrationController(authRepository, userRepository);
-    });

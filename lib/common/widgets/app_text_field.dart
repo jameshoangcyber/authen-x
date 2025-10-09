@@ -16,6 +16,8 @@ class AppTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final Function(String)? onChanged;
   final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final int? maxLines;
 
   const AppTextField({
     super.key,
@@ -33,6 +35,8 @@ class AppTextField extends StatelessWidget {
     this.onTap,
     this.onChanged,
     this.focusNode,
+    this.textInputAction,
+    this.maxLines,
   });
 
   @override
@@ -48,6 +52,8 @@ class AppTextField extends StatelessWidget {
       onTap: onTap,
       onChanged: onChanged,
       focusNode: focusNode,
+      textInputAction: textInputAction,
+      maxLines: maxLines ?? 1,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,

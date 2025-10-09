@@ -17,6 +17,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Material Icons for Android UI
   cupertino_icons: ^1.0.8
@@ -36,7 +38,7 @@ dependencies:
   go_router: ^14.6.2
   
   # UI and utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   google_fonts: ^6.2.1
 
 dev_dependencies:

@@ -20,23 +20,23 @@ class SplashController extends StateNotifier<SplashState> {
           context.go('/profile');
         }
       } else {
-        // User is not authenticated, go to auth method selection
+        // User is not authenticated, go to welcome page
         if (context.mounted) {
-          context.go('/auth-method');
+          context.go('/welcome');
         }
       }
     } catch (e) {
-      // If there's an error, default to auth method selection
+      // If there's an error, default to welcome page
       if (context.mounted) {
-        context.go('/auth-method');
+        context.go('/welcome');
       }
     }
   }
 
-  // Navigate to registration
-  void navigateToRegistration(BuildContext context) {
+  // Navigate to phone sign-in (unified login/register)
+  void navigateToPhoneSignIn(BuildContext context) {
     if (context.mounted) {
-      context.go('/phone-registration');
+      context.go('/phone-signin');
     }
   }
 }

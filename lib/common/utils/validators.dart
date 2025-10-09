@@ -46,6 +46,27 @@ class Validators {
     return null;
   }
 
+  static String? password(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Vui lòng nhập mật khẩu';
+    }
+
+    if (value.length < 6) {
+      return 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+
+    if (value.length > 128) {
+      return 'Mật khẩu không được quá 128 ký tự';
+    }
+
+    // Check for at least one letter and one number
+    if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) {
+      return 'Mật khẩu phải chứa ít nhất một chữ cái và một số';
+    }
+
+    return null;
+  }
+
   static String? email(String? value) {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập email';

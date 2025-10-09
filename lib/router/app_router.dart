@@ -3,15 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/splash/pages/splash_page.dart';
 import '../features/auth/pages/auth_method_page.dart';
-import '../features/auth/pages/auth_method_register_page.dart';
 import '../features/auth/pages/phone_signin_page.dart';
 import '../features/auth/pages/otp_verify_page.dart';
-import '../features/auth/pages/phone_registration_page.dart';
-import '../features/auth/pages/personal_info_page.dart';
-import '../features/auth/pages/registration_verify_page.dart';
-import '../features/auth/pages/email_signin_page.dart';
-import '../features/auth/pages/email_registration_page.dart';
 import '../features/auth/pages/profile_page.dart';
+import '../features/auth/pages/password_setup_page.dart';
+import '../features/auth/pages/password_signin_page.dart';
+import '../features/auth/pages/change_password_page.dart';
+import '../features/auth/pages/edit_profile_page.dart';
+import '../features/auth/models/user_model.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -22,22 +21,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'splash',
         builder: (context, state) => const SplashPage(),
       ),
-      // Auth method selection
+      // Welcome page
       GoRoute(
-        path: '/auth-method',
-        name: 'auth-method',
-        builder: (context, state) => const AuthMethodPage(),
+        path: '/welcome',
+        name: 'welcome',
+        builder: (context, state) => const WelcomePage(),
       ),
-      GoRoute(
-        path: '/auth-method-register',
-        name: 'auth-method-register',
-        builder: (context, state) => const AuthMethodRegisterPage(),
-      ),
-      // Phone authentication
+      // Phone authentication (unified login/register)
       GoRoute(
         path: '/phone-signin',
         name: 'phone-signin',
         builder: (context, state) => const PhoneSignInPage(),
+      ),
+      // Password sign-in
+      GoRoute(
+        path: '/password-signin',
+        name: 'password-signin',
+        builder: (context, state) => const PasswordSignInPage(),
       ),
       GoRoute(
         path: '/otp-verify',
@@ -47,37 +47,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return OtpVerifyPage(phoneNumber: phoneNumber ?? '');
         },
       ),
-      // Registration routes
+      // Password setup page
       GoRoute(
-        path: '/phone-registration',
-        name: 'phone-registration',
-        builder: (context, state) => const PhoneRegistrationPage(),
+        path: '/password-setup',
+        name: 'password-setup',
+        builder: (context, state) => const PasswordSetupPage(),
       ),
+      // Change password page
       GoRoute(
-        path: '/personal-info',
-        name: 'personal-info',
-        builder: (context, state) => const PersonalInfoPage(),
-      ),
-      GoRoute(
-        path: '/registration-verify',
-        name: 'registration-verify',
-        builder: (context, state) => const RegistrationVerifyPage(),
-      ),
-      // Email authentication
-      GoRoute(
-        path: '/email-signin',
-        name: 'email-signin',
-        builder: (context, state) => const EmailSignInPage(),
-      ),
-      GoRoute(
-        path: '/email-registration',
-        name: 'email-registration',
-        builder: (context, state) => const EmailRegistrationPage(),
+        path: '/change-password',
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordPage(),
       ),
       GoRoute(
         path: '/profile',
         name: 'profile',
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        name: 'edit-profile',
+        builder: (context, state) {
+          final profile = state.extra as UserModel?;
+          return EditProfilePage(currentProfile: profile);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

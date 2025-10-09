@@ -30,6 +30,32 @@ class UserRepository {
     }
   }
 
+  // Update user profile in Firestore (with upsert to handle missing documents)
+  Future<void> updateUserProfile(UserModel user) async {
+    try {
+      print('🔍 Debug: Updating user profile for UID: ${user.uid}');
+      print('🔍 Debug: Updated user data: ${user.toMap()}');
+
+      // Ensure updatedAt is set to current time
+      final updatedUser = user.copyWith(updatedAt: DateTime.now());
+
+      // Use set with merge to create document if it doesn't exist
+      await _firestore
+          .collection(_usersCollection)
+          .doc(user.uid)
+          .set(updatedUser.toMap(), SetOptions(merge: true));
+      print('✅ User profile updated successfully in Firestore');
+    } catch (e) {
+      print('❌ Error updating user profile: $e');
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
+        );
+      }
+      throw Exception('Lỗi khi cập nhật hồ sơ người dùng: $e');
+    }
+  }
+
   // Get user profile by UID
   Future<UserModel?> getUserProfile(String uid) async {
     try {
@@ -47,25 +73,6 @@ class UserRepository {
         );
       }
       throw Exception('Lỗi khi lấy hồ sơ người dùng: $e');
-    }
-  }
-
-  // Update user profile
-  Future<void> updateUserProfile(UserModel user) async {
-    try {
-      final updatedUser = user.copyWith(updatedAt: DateTime.now());
-      await _firestore
-          .collection(_usersCollection)
-          .doc(user.uid)
-          .update(updatedUser.toMap());
-    } catch (e) {
-      print('❌ Error updating user profile: $e');
-      if (e.toString().contains('permission-denied')) {
-        throw Exception(
-          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
-        );
-      }
-      throw Exception('Lỗi khi cập nhật hồ sơ người dùng: $e');
     }
   }
 
@@ -138,23 +145,89 @@ class UserRepository {
   Future<void> deleteUserProfile(String uid) async {
     try {
       await _firestore.collection(_usersCollection).doc(uid).delete();
+      print('✅ User profile deleted successfully');
     } catch (e) {
+      print('❌ Error deleting user profile: $e');
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
+        );
+      }
       throw Exception('Lỗi khi xóa hồ sơ người dùng: $e');
     }
   }
 
-  // Update email verification status
+  // Update password status (with upsert to handle missing documents)
+  Future<void> updatePasswordStatus(String uid, bool hasPassword) async {
+    try {
+      print('🔍 Debug: Updating password status for UID: $uid');
+      print('🔍 Debug: Password status: $hasPassword');
+
+      // Use set with merge to create document if it doesn't exist
+      await _firestore.collection(_usersCollection).doc(uid).set({
+        'hasPassword': hasPassword,
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      }, SetOptions(merge: true));
+
+      print('✅ Password status updated successfully');
+    } catch (e) {
+      print('❌ Error updating password status: $e');
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
+        );
+      }
+      throw Exception('Lỗi khi cập nhật trạng thái mật khẩu: $e');
+    }
+  }
+
+  // Update email verification status (with upsert to handle missing documents)
   Future<void> updateEmailVerificationStatus(
     String uid,
     bool isVerified,
   ) async {
     try {
-      await _firestore.collection(_usersCollection).doc(uid).update({
+      print('🔍 Debug: Updating email verification status for UID: $uid');
+      print('🔍 Debug: Email verified: $isVerified');
+
+      // Use set with merge to create document if it doesn't exist
+      await _firestore.collection(_usersCollection).doc(uid).set({
         'isEmailVerified': isVerified,
         'updatedAt': Timestamp.fromDate(DateTime.now()),
-      });
+      }, SetOptions(merge: true));
+
+      print('✅ Email verification status updated successfully');
     } catch (e) {
+      print('❌ Error updating email verification status: $e');
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
+        );
+      }
       throw Exception('Lỗi khi cập nhật trạng thái xác thực email: $e');
+    }
+  }
+
+  // Create or update user profile (upsert)
+  Future<void> createOrUpdateUserProfile(UserModel user) async {
+    try {
+      print('🔍 Debug: Creating or updating user profile for UID: ${user.uid}');
+
+      final updatedUser = user.copyWith(updatedAt: DateTime.now());
+
+      await _firestore
+          .collection(_usersCollection)
+          .doc(user.uid)
+          .set(updatedUser.toMap(), SetOptions(merge: true));
+      print('✅ User profile created or updated successfully');
+    } catch (e) {
+      print('❌ Error creating or updating user profile: $e');
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Lỗi quyền truy cập Firestore. Vui lòng cấu hình Security Rules trong Firebase Console.',
+        );
+      }
+      throw Exception('Lỗi khi tạo hoặc cập nhật hồ sơ người dùng: $e');
     }
   }
 }

@@ -32,12 +32,12 @@ class _OtpVerifyPageState extends ConsumerState<OtpVerifyPage> {
 
       if (next != null) {
         print(
-          '✅ Debug: User authenticated successfully, navigating to profile',
+          '✅ Debug: User authenticated successfully, navigating to password setup',
         );
-        // User successfully authenticated, navigate to profile
+        // User successfully authenticated, navigate to password setup
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print('🚀 Debug: Executing navigation to profile');
-          context.go('/profile');
+          print('🚀 Debug: Executing navigation to password setup');
+          context.go('/password-setup');
         });
       }
     });
